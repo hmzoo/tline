@@ -218,3 +218,6 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# tline : jeu de données et modèles entraînés (locaux)
+data/

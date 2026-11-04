@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>tline — vitesse du pointeur</title>
+    <link rel="icon" href="data:," />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <main>
+      <header>
+        <h1>tline</h1>
+        <p class="sub">vitesse du pointeur · fenêtre glissante de 3 s</p>
+        <dl class="stats">
+          <div>
+            <dt>instantanée</dt>
+            <dd id="stat-now">—</dd>
+          </div>
+          <div>
+            <dt>pic</dt>
+            <dd id="stat-peak">—</dd>
+          </div>
+          <div>
+            <dt>dérivée</dt>
+            <dd id="stat-deriv">—</dd>
+          </div>
+          <div>
+            <dt>f pic</dt>
+            <dd id="stat-freq">—</dd>
+          </div>
+        </dl>
+      </header>
+
+      <nav class="modes" aria-label="source de mouvement">
+        <button type="button" class="mode is-active" data-mode="manuel" aria-pressed="true" title="suivi de la souris">manuel</button>
+        <button type="button" class="mode" data-mode="constant" aria-pressed="false" title="gauche → droite, vitesse constante">constant</button>
+        <button type="button" class="mode" data-mode="accel" aria-pressed="false" title="gauche → droite, vitesse croissant régulièrement">accélération</button>
+        <button type="button" class="mode" data-mode="cyclic" aria-pressed="false" title="aller-retour horizontal sinusoïdal à 1 Hz">cyclique</button>
+        <button type="button" class="mode" data-mode="circle" aria-pressed="false" title="trajectoire circulaire à 1 Hz">cercle</button>
+        <button type="button" class="mode" data-mode="chaotic" aria-pressed="false" title="somme de sinusoïdes incommensurables (non périodique)">chaotique</button>
+      </nav>
+
+      <div class="controls">
+        <button type="button" id="btn-train" class="action" title="raccourci : barre d'espace">apprentissage</button>
+        <kbd class="key" id="kbd-train" title="démarre / arrête l'apprentissage">espace</kbd>
+        <button type="button" id="btn-simulate" class="action" disabled>simuler</button>
+        <button type="button" id="btn-clear" class="action ghost" disabled>effacer</button>
+        <label class="ctx" title="nombre de points de vitesse pris en compte dans l'état (contexte temporel)">
+          contexte
+          <input type="range" id="ml-context" min="1" max="12" step="1" value="8" />
+          <span id="ml-context-value">8</span>
+        </label>
+        <span class="ml-status" id="ml-status">aucune donnée</span>
+      </div>
+
+      <div class="models">
+        <select id="model-select" aria-label="modèles enregistrés">
+          <option value="">— aucun modèle —</option>
+        </select>
+        <input id="model-name" type="text" placeholder="nom du modèle" spellcheck="false" autocomplete="off" />
+        <button type="button" id="btn-save-model" class="action ghost" disabled>sauvegarder</button>
+        <button type="button" id="btn-delete-model" class="action ghost" disabled>supprimer</button>
+        <span class="ml-status" id="model-status"></span>
+      </div>
+
+      <div class="signature">
+        <table>
+          <thead>
+            <tr>
+              <th scope="col"></th>
+              <th scope="col" title="vitesse moyenne (px/s)">v moy</th>
+              <th scope="col" title="90ᵉ centile de vitesse (px/s)">p90</th>
+              <th scope="col" title="accélération moyenne en valeur absolue (px/s²)">|a|</th>
+              <th scope="col" title="variation d'accélération — secousses (px/s³)">jerk</th>
+              <th scope="col" title="changements de direction par seconde">virages</th>
+              <th scope="col" title="part du temps à l'arrêt">arrêts</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <th scope="row">geste</th>
+              <td id="sig-geste-v">—</td>
+              <td id="sig-geste-p90">—</td>
+              <td id="sig-geste-a">—</td>
+              <td id="sig-geste-jerk">—</td>
+              <td id="sig-geste-turns">—</td>
+              <td id="sig-geste-stops">—</td>
+            </tr>
+            <tr>
+              <th scope="row">modèle</th>
+              <td id="sig-modele-v">—</td>
+              <td id="sig-modele-p90">—</td>
+              <td id="sig-modele-a">—</td>
+              <td id="sig-modele-jerk">—</td>
+              <td id="sig-modele-turns">—</td>
+              <td id="sig-modele-stops">—</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <section class="frame capture-frame">
+        <span class="frame-label" id="capture-label">capture · manuel</span>
+        <canvas id="capture"></canvas>
+        <span class="hint" id="capture-hint">survolez cette zone</span>
+      </section>
+
+      <section class="charts">
+        <div class="frame">
+          <span class="frame-label">vitesse · px/s</span>
+          <canvas id="speed-chart"></canvas>
+        </div>
+        <div class="frame">
+          <span class="frame-label">dérivée de la vitesse · px/s²</span>
+          <canvas id="accel-chart"></canvas>
+        </div>
+        <div class="frame">
+          <span class="frame-label">transformée (FFT) · 0–20 Hz</span>
+          <canvas id="spectrum-chart"></canvas>
+        </div>
+      </section>
+    </main>
+
+    <script src="app.js"></script>
+  </body>
+</html>
